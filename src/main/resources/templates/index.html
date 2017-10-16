@@ -2,84 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8" />
-<title>Insert title here</title>
+<title>测试跨域</title>
 
 <script th:src="@{/js/jquery.min.js}"></script>
 </head>
 <body>
-	<!--
-	-->
-	<pre>
-	测试方法：
-		1.启动 Application.main()
-		
-		2.访问 http://localhost:8080
-			（不可用 http://127.0.0.1:8080 访问，
-			     因调用接口是用 127.0.0.1，
-			     如果一样就产生不了跨域）
-		
-		3.打开谷歌浏览器，按 F12 打开调试窗口，打开 console
-		
-		4.依次点击按钮观察结果。若跨域 console 出现跨域提醒
-		
-		5.切换防止跨域的条件（SpringBoot、Spring拦截器、Filter方式）进行测试
-	</pre>
-	<pre>
-	<hr />
-	1.测试非 ajax 方式，form 提交。
-	
-	结论：即使被请求方未处理跨域，使用 GET、POST、PUT、DELETE、OPTIONS 都不会发生跨域
-	</pre>
-	<!-- GET -->		<form action="http://127.0.0.1:8080/cors/testCors" method="get"><input type="submit" value="GET"/></form>
-	<!-- POST -->		<form action="http://127.0.0.1:8080/cors/testCors" method="post"><input type="submit" value="POST"/></form>
-	<!-- PUT -->		<form action="http://127.0.0.1:8080/cors/testCors" method="post"><input type="hidden" name="_method" value="put" /><input type="submit" value="PUT"/></form>
-	<!-- DELETE -->		<form action="http://127.0.0.1:8080/cors/testCors" method="post"><input type="hidden" name="_method" value="delete" /><input type="submit" value="DELETE"/></form>
-
-	<hr />
-	<pre>
-	2.测试 ajax 方式。
-	
-	结论：如果被请求方没有处理跨域，则这几种方式都会出现跨域的情况
-	</pre>
-	
-	<!-- GET -->		<input type="button" value="ajax GET" onclick="testCors('GET')" /><br />
-	<!-- POST -->		<input type="button" value="ajax POST" onclick="testCors('POST')" /><br />
-	<!-- PUT -->		<input type="button" value="ajax PUT" onclick="testCors('PUT')" /><br />
-	<!-- DELETE -->		<input type="button" value="ajax DELETE" onclick="testCors('DELETE')" /><br />
-	<!-- OPTIONS -->	<!-- <input type="button" value="ajax OPTIONS" onclick="testCors('OPTIONS')" /><br /> -->
-	
-	<pre>
-	<hr />
-	3.测试 ajax 方式，即使是simple request，GET、POST遇到contentType是application/json时也会变成复杂的请求。
-	
-	结论：如果被请求方没有处理跨域，则这几种方式都会出现跨域的情况
-	</pre>
-	<!-- POST:application/json -->
-	<input type="button" value="ajax POST ContentType是 application/json" onclick="applicationJson()" /><br />
-	
-	<script type="text/javascript">
-		function testCors(method) {
-			$.ajax({
-				type : method,
-				url: "http://127.0.0.1:8080/cors/testCors",
-				success: function(jsonResult) {
-					console.log(jsonResult);
-				}
-			});
-		}
-		
-		// application/json方式
-		function applicationJson() {
-			$.ajax({
-				type : "POST",
-				url: "http://127.0.0.1:8080/cors/testCorsApplicationJson",
-				data: JSON.stringify({"foo":"foovalue"}),
-				contentType: "application/json; charset=UTF-8",
-				success: function(jsonResult) {
-					console.log(jsonResult);
-				}
-			});
-		}
-	</script>
+	<a href="/toTestCorsNonExceptionPage">测试跨域（接口不发生异常）</a><br/><br/>
+	<a href="/toTestCorsExceptionPage">测试跨域（接口发生异常并且未统一包装成code形式）</a>
 </body>
 </html>

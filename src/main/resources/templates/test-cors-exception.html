@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>被测试接口发生异常情况</title>
+
+<script th:src="@{/js/jquery.min.js}"></script>
+</head>
+<body>
+	<!--
+	-->
+	<pre>
+	被测试接口发生异常情况
+	
+	测试方法：
+		1.启动 Application.main()
+		
+		2.访问 http://localhost:8080
+			（不可用 http://127.0.0.1:8080 访问，
+			     因调用接口是用 127.0.0.1，
+			     如果一样就产生不了跨域）
+		
+		3.打开谷歌浏览器，按 F12 打开调试窗口，打开 console
+		
+		4.依次点击按钮观察结果。若跨域 console 出现跨域提醒
+		
+		5.切换防止跨域的条件（SpringBoot、Spring拦截器、Filter方式）进行测试
+	</pre>
+	
+	<hr />
+	
+	<pre>
+	0.模拟一种现象(注意把三种跨域处理都关闭，在程序里写了setHeader处理异常)
+	★★★演示一种现象：被请求的接口出异常了导致跨域处理的 setHeader 没被执行，
+	然后出现跨域，结果前端开发以为跨域没处理好，反馈给后端：“嘿，你跨域未处理好！”
+	
+	实际跨域是处理好了（只是不健壮），就因为发生异常导致setHeader没被执行导致前段人员
+	误以为是跨域没处理好，其根本原因是程序出异常了
+	
+	结论：要写出健壮的处理跨域的程序，不管Controller有没有处理好异常
+		（正常情况应该把异常包装成ResultBean）。1点就是为了测试三种方式是否健壮（结论是都很健壮）
+	
+	controller 写法：
+	
+	@ResponseBody
+	@RequestMapping("cors/testCors/exception/methodHandle")
+	public Object testCorsMethodHandle(//
+			HttpServletRequest req, //
+			HttpServletResponse resp//
+	) {
+		try {
+			int i = 5 / 0;
+			
+			resp.setHeader("Access-Control-Allow-Origin", "*");
+			resp.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");// 不明白，为什么要明确指定，用*就会导致PUT、DELETE失效
+			resp.setHeader("Access-Control-Allow-Headers", "Content-Type,Origin,Accept");// 同样这里不能用*
+			resp.setHeader("Access-Control-Allow-Credentials", "true");
+			resp.setHeader("Access-Control-Max-Age", "1800");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	</pre>
+	
+	<!-- GET -->		<input type="button" value="ajax GET demo" onclick="testCors_demo('GET')" /><br />
+	<!-- POST -->		<input type="button" value="ajax POST demo" onclick="testCors_demo('POST')" /><br />
+	<!-- PUT -->		<input type="button" value="ajax PUT demo" onclick="testCors_demo('PUT')" /><br />
+	<!-- DELETE -->		<input type="button" value="ajax DELETE demo" onclick="testCors_demo('DELETE')" /><br />
+	<!-- POST:application/json -->	<input type="button" value="ajax POST ContentType是 application/json demo" onclick="applicationJson_demo()" /><br />
+	
+	<hr />
+	
+	<pre>
+	1.测试 ajax 方式请求不同域的接口，开启了三种处理跨域其中之一，能否健壮地不爆出跨域提示？
+	
+	结论：都没问题。可放心使用这种终极的处理跨域的方法了。
+	</pre>
+	
+	<!-- GET -->		<input type="button" value="ajax GET" onclick="testCors('GET')" /><br />
+	<!-- POST -->		<input type="button" value="ajax POST" onclick="testCors('POST')" /><br />
+	<!-- PUT -->		<input type="button" value="ajax PUT" onclick="testCors('PUT')" /><br />
+	<!-- DELETE -->		<input type="button" value="ajax DELETE" onclick="testCors('DELETE')" /><br />
+	<!-- POST:application/json --> <input type="button" value="ajax POST ContentType是 application/json" onclick="applicationJson()" /><br />
+	
+	<script type="text/javascript">
+		function testCors(method) {
+			$.ajax({
+				type : method,
+				url: "http://127.0.0.1:8080/cors/testCors/exception",
+				success: function(jsonResult) {
+					console.log(jsonResult);
+				}
+			});
+		}
+		
+		// application/json方式
+		function applicationJson() {
+			$.ajax({
+				type : "POST",
+				url: "http://127.0.0.1:8080/cors/testCorsApplicationJson/exception",
+				data: JSON.stringify({"foo":"foovalue"}),
+				contentType: "application/json; charset=UTF-8",
+				success: function(jsonResult) {
+					console.log(jsonResult);
+				}
+			});
+		}
+		
+		function testCors_demo(method) {
+			$.ajax({
+				type : method,
+				url: "http://127.0.0.1:8080/cors/testCors/exception/methodHandle",
+				success: function(jsonResult) {
+					console.log(jsonResult);
+				}
+			});
+		}
+		
+		function applicationJson_demo() {
+			$.ajax({
+				type : "POST",
+				url: "http://127.0.0.1:8080/cors/testCorsApplicationJson/exception/methodHandle",
+				data: JSON.stringify({"foo":"foovalue"}),
+				contentType: "application/json; charset=UTF-8",
+				success: function(jsonResult) {
+					console.log(jsonResult);
+				}
+			});
+		}
+	</script>
+</body>
+</html>
